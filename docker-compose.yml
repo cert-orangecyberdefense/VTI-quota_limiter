@@ -1,0 +1,11 @@
+version: "2"
+
+services:
+  vti_quota_limiter:
+    container_name: vti_quota_limiter
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./log:/app/log:rw
+      - ./conf:/app/conf:ro

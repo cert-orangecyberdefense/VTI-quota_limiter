@@ -1,0 +1,20 @@
+# MANDATORY
+GROUP_ID="your_group"  # group id of your virus total group
+API_KEY="your_api_key"  # api key for your virus total group admin 
+WARN_LEVEL=0.8  # usage percentage at which to send warning mail
+LOG_FILE='./log/limiter.log' # log file
+QUOTA_CONF='./conf/vt_intelligence_user_quota.json' # quota configuration file
+RAN_THIS_WEEK='./log/ran_this_week.json' # file to store the timestamp of the latest first run of a week
+
+# MAIL RELATED OPTIONAL
+SEND_MAIL=False  # set to true to send mail
+SMTP_HOST="your.host.smpt" # smtp host
+SMTP_PORT=0  # port of your smtp server
+LOCAL_HOSTNAME="your.hostname"  # hostname of your server to send to the smtp server
+COMPANY_NAME="company_mail"  # name of your company to display on emails
+SENDER_EMAIL="some@email.com"  # email of the sender
+SENDER_NAME="sender_name"
+CONTACT_EMAIL="some@email.com"  # contact email
+DELETED_USERS='./log/deleted.json' # file to store deleted users
+WARNED_USERS='./log/warned.json' # file to store warned users
+MAIL_CC=['']  # list of email addresses to cc

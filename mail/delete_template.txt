@@ -1,0 +1,15 @@
+Hello,
+
+Your account has been automatically removed from the VT Enterprise $company_name subscription until next week.
+
+You have consumed $quota_used Intelligence searches out of your allowed quota ($quota_allowed) for this week of the month.
+You will be automatically reintegrated in the group once your usage falls below your allowed quota.
+
+To prevent exceeding your weekly quota, only use Intelligence Search (the default search through GUI) when needed (i.e. when you need advanced filters).
+
+Consider using the VT4Browser extension (https://support.virustotal.com/hc/en-us/articles/115002700745-Browser-Extensions) or CLI (https://support.virustotal.com/hc/en-us/articles/360006819798-API-Scripts-and-client-libraries#h_10f07166-4521-4730-9910-da4e810ffaf1) when only IOC lookup is needed.
+See the following documentation about the browser extension usage https://support.virustotal.com/hc/en-us/articles/4413290242705-VT4Browsers-4-0
+
+Best regards,
+$sender_name
+$contact_email
