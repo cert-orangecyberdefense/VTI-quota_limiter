@@ -133,3 +133,5 @@ config.py
 log/deleted.json
 log/warned.json
 log/ran_this_week.json
+
+.idea
