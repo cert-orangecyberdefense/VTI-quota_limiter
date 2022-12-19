@@ -1,8 +1,10 @@
 Hello,
 
-Your account has been automatically reintegrated in the VT Enterprise $company_name group. Your current quota is $current_quota with a current usage of $current_usage.
+Your account has been automatically reintegrated in the VT Enterprise $company_name group. 
+Your current Intelligence search quota is $current_search_quota with a current usage of $current_search_usage. 
+Your current Intelligence download quota is $current_download_quota with a current usage of $current_download_usage
 
-You were removed because your consumption of Intelligence search exceeded your weekly quota.
+You were removed because your consumption of Intelligence search or Intelligence download exceeded your weekly quota.
 
 To prevent exceeding your weekly quota, only use Intelligence Search (the default search through GUI) when needed (i.e. when you need advanced filters).
 
