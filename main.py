@@ -45,11 +45,15 @@ class VTIQuotaLimiter:
         warned = 0
         removed = 0
         for user in self.users:
-            user_quota = self.get_user_quota(user['attributes']["email"])
-            if self.remove_user_if_quota_exceeded(user, user_quota):
-                removed += 1
-            if self.warn_user_if_warn_quota_reached(user, user_quota):
-                warned += 1
+            user_quota = {
+                'intelligence_searches_monthly': self.get_user_intelligent_search_quota(user['attributes']["email"]),
+                'intelligence_downloads_monthly':  self.get_user_intelligent_download_quota(user['attributes']["email"])
+            }
+            for endpoint in ['intelligence_searches_monthly', 'intelligence_downloads_monthly']:
+                if self.remove_user_if_quota_exceeded(user, endpoint, user_quota[endpoint]):
+                    removed += 1
+                if self.warn_user_if_warn_quota_reached(user, endpoint, user_quota[endpoint]):
+                    warned += 1
         self.log_message(f"Warned {warned} users and removed {removed} users from the group.")
         json.dump(self.deleted_users, open(DELETED_USERS, 'w'), indent=4)
         json.dump(self.warned_users, open(WARNED_USERS, 'w'), indent=4)
@@ -65,12 +69,17 @@ class VTIQuotaLimiter:
         self.deleted_users = cleaned_list
 
 
-    def get_user_quota(self, user_email: str) -> int:
+    def get_user_intelligent_search_quota(self, user_email: str) -> int:
         user_quota = self.quota_conf['intelligence_quota_weekly'].get(user_email)
         if user_quota is None:
             user_quota = self.quota_conf['default_intelligence_weekly_quota']
         return user_quota
-
+    
+    def get_user_intelligent_download_quota(self, user_email: str) -> int:
+        user_quota = self.quota_conf['intelligence_download_quota_weekly'].get(user_email)
+        if user_quota is None:
+            user_quota = self.quota_conf['default_intelligence_download_weekly_quota']
+        return user_quota
 
     def was_ran_new_week(self) -> bool:
         try:
@@ -149,10 +158,13 @@ class VTIQuotaLimiter:
         self.log_message(f"{len(self.deleted_users)} users are currently removed from the group, checking if users should be reinstated.")
         deleted_users = []
         for user in self.deleted_users:
-            user_quota = self.get_user_quota(user['email'])
-            if not self.is_quota_exceeded(user['current_usage'], user_quota):
+            user_quota = {
+                'intelligence_searches_monthly': self.get_user_intelligent_search_quota(user["email"]),
+                'intelligence_downloads_monthly': self.get_user_intelligent_download_quota(user["email"])
+            }
+            if not self.is_quota_exceeded(user['current_usage'], user_quota['intelligence_searches_monthly']) and not self.is_quota_exceeded(user['current_usage'], user_quota['intelligence_downloads_monthly']):
                 if self.add_users_to_group(user['email'], GROUP_ID):
-                    self.send_reintegrated_email(user['email'], self.weeks_count * user_quota, user['current_usage'])
+                    self.send_reintegrated_email(user['email'], self.weeks_count * user_quota['intelligence_searches_monthly'], user['current_searches_usage'], self.weeks_count * user_quota['intelligence_downloads_monthly'], user['current_download_usage'])
                 else:
                     deleted_users.append(user)
             else:
@@ -191,8 +203,8 @@ class VTIQuotaLimiter:
         return any(user_email == user["email"] for user in self.deleted_users)
 
 
-    def warn_user_if_warn_quota_reached(self, user, user_quota):
-        if self.is_warn_reached(user['attributes']['quotas']['intelligence_searches_monthly']['used'], user_quota):
+    def warn_user_if_warn_quota_reached(self, user, endpoint, user_quota):
+        if self.is_warn_reached(user['attributes']['quotas'][endpoint]['used'], user_quota):
             if not user['attributes']['email'] in self.warned_users and not self.is_user_deleted(user['attributes']['email']):
                 self.log_message(
                     f"User {user['id']} with email {user['attributes']['email']} from group {GROUP_ID} WARNED"
@@ -201,66 +213,72 @@ class VTIQuotaLimiter:
                 self.warned_users.append(user['attributes']['email'])
                 self.send_warn_email(
                     user['attributes']['email'],
-                    user['attributes']['quotas']['intelligence_searches_monthly']['used'],
-                    self.weeks_count * user_quota
+                    user['attributes']['quotas'][endpoint]['used'],
+                    self.weeks_count * user_quota,
+                    endpoint
                 )
                 return True
         return False
 
 
-    def remove_user_if_quota_exceeded(self, user, user_quota) -> bool:
-        if self.is_quota_exceeded(user['attributes']['quotas']['intelligence_searches_monthly']['used'], user_quota):
+    def remove_user_if_quota_exceeded(self, user, endpoint, user_quota) -> bool:
+        if self.is_quota_exceeded(user['attributes']['quotas'][endpoint]['used'], user_quota):
             self.log_message(
                 f"User {user['id']} with email {user['attributes']['email']} from group {GROUP_ID} DELETED"
                 f" -> exceeded quota of {(self.weeks_count * user_quota)}")
             
             self.deleted_users.append({
                 'email': user['attributes']['email'],
-                'current_usage': user['attributes']['quotas']['intelligence_searches_monthly']['used']
+                'current_searches_usage': user['attributes']['quotas']['intelligence_searches_monthly']['used'],
+                'current_download_usage': user['attributes']['quotas']['intelligence_downloads_monthly']['used']
             })
             self.remove_user_from_group(user['id'])
             self.send_delete_email(
                 user['attributes']['email'],
-                user['attributes']['quotas']['intelligence_searches_monthly']['used'],
-                self.weeks_count * user_quota
+                user['attributes']['quotas'][endpoint]['used'],
+                self.weeks_count * user_quota,
+                endpoint
             )
             return True
         return False
 
 
-    def send_reintegrated_email(self, email, current_quota, current_usage):
+    def send_reintegrated_email(self, user_email, current_search_quota, current_search_usage, current_download_quota, current_download_usage):
         if not self.send_mail:
             return
         mapping = {
-            'to_email': email,
+            'to_email': user_email,
             'subject': f'[IMPORTANT] VirusTotal Enterprise - You have been reintegrated in {self.group_id}',
             'company_name': self.company_name,
             'sender_name': self.sender_name,
             'contact_email': self.contact_email,
-            'current_quota': current_quota,
-            'current_usage': current_usage
+            'current_search_quota': current_search_quota,
+            'current_search_usage': current_search_usage,
+            'current_download_quota': current_download_quota,
+            'current_download_usage': current_download_usage
         }
         body_template = open('mail/reintegrated_template.txt', 'r').read()
-        self.format_and_send_email(email, mapping, body_template)
+        self.format_and_send_email(user_email, mapping, body_template)
 
 
-    def send_delete_email(self, email, quota_used, quota_allowed):
+    def send_delete_email(self, user_email, quota_used, quota_allowed, endpoint):
         if not self.send_mail:
             return
         mapping = {
-            'to_email': email,
+            'to_email': user_email,
             'subject': f'[IMPORTANT] VirusTotal Enterprise - You have been removed from {self.group_id}',
             'quota_used': quota_used,
+            'endpoint': "searches" if endpoint == "intelligence_searches_monthly" else "downloads",
             'quota_allowed': quota_allowed,
             'company_name': self.company_name,
             'sender_name': self.sender_name,
             'contact_email': self.contact_email,
         }
         body_template = open('mail/delete_template.txt', 'r').read()
-        self.format_and_send_email(email, mapping, body_template)
+        self.format_and_send_email(user_email, mapping, body_template)
 
 
-    def send_warn_email(self, email, quota_used, quota_allowed):
+    def send_warn_email(self, email, quota_used, quota_allowed, endpoint):
         if not self.send_mail:
             return
         
@@ -269,6 +287,7 @@ class VTIQuotaLimiter:
             'subject': f'[WARNING] VirusTotal Enterprise - {self.group_id} Intelligence search quota usage > {math.floor(WARN_LEVEL * 100)}%',
             'warn_rate': math.floor(WARN_LEVEL * 100),
             'quota_used': quota_used,
+            'endpoint': "searches" if endpoint == "intelligence_searches_monthly" else "downloads",
             'quota_allowed': quota_allowed,
             'company_name': self.company_name,
             'sender_name': self.sender_name,

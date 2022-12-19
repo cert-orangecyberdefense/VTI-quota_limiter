@@ -2,7 +2,7 @@ Hello,
 
 Your account has been automatically removed from the VT Enterprise $company_name subscription until next week.
 
-You have consumed $quota_used Intelligence searches out of your allowed quota ($quota_allowed) for this week of the month.
+You have consumed $quota_used Intelligence $endpoint out of your allowed quota ($quota_allowed) for this week of the month.
 You will be automatically reintegrated in the group once your usage falls below your allowed quota.
 
 To prevent exceeding your weekly quota, only use Intelligence Search (the default search through GUI) when needed (i.e. when you need advanced filters).

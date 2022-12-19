@@ -1,6 +1,6 @@
 Hello,
 
-This is a kindly warning regarding your usage of Intelligence search quota in VT Enterprise.
+This is a kindly warning regarding your usage of Intelligence $endpoint quota in VT Enterprise.
 
 You have consumed $warn_rate % ($quota_used) of your allowed quota ($quota_allowed) for this week of the month.
 If you exceed your allowed quota, your account will be automatically removed from $company_name subscription until next week.

@@ -1,6 +1,10 @@
 {
     "default_intelligence_weekly_quota": 100000000,
+    "default_intelligence_download_quota_weekly": 10000000,
     "intelligence_quota_weekly": {
+        "example@email.com": 0
+    },
+    "intelligence_download_quota_weekly": {
         "example@email.com": 0
     }
 }
