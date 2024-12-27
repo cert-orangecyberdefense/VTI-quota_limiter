@@ -140,8 +140,9 @@ class VTIQuotaLimiter:
             self.log_message(f"User {user_id} failed to be removed from {self.group_id}")
             return False
         else:
+            error_msg = json.loads(response.text).get('error',{}).get('message','')
             self.log_message(
-                f"Unexcepted status code {response.status_code} : User {user_id} failed to be removed from {self.group_id}")
+                f"Unexcepted status code {response.status_code} : User {user_id} failed to be removed from {self.group_id} with message {error_msg}")
             return False
 
 
@@ -169,7 +170,7 @@ class VTIQuotaLimiter:
             self.log_message(f"Added user {user_email} to group {group_id}")
             return True
         else:
-            error_msg = json.loads(response.text)['error']['message']
+            error_msg = json.loads(response.text).get('error',{}).get('message','')
             self.log_message(
                 f"Unexpected status code {response.status_code} : Failed to add user {user_email} to group {group_id} with message {error_msg}")
         return False
