@@ -129,6 +129,7 @@ dmypy.json
 .pyre/
 
 # secrets
+conf/vt_intelligence_user_quota.json
 config.py
 log/deleted.json
 log/warned.json

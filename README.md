@@ -18,7 +18,7 @@ If you want mails to be sent, make sure to fill all mail related variables. Mail
 
 If your machine use a proxy, make sure to uncomment the proxy related environmment variables in the `Dockerfile`.
 
-Update the `vt_intelligence_user_quota.json` file in the `conf` folder. General quota and user specific quota can be set in that file. The quota defined there will be the quota for one week. They add up for each week.
+Create/Edit in the `conf` folder the file called `vt_intelligence_user_quota.json` using the `vt_intelligence_user_quota.json.template` file as a reference. General quota and user specific quota can be set in that file. The quota defined there will be the quota for one week. They add up for each week.
 
 If a user has a quota of 50, each week his running quota will increase by 50, meaning that on the first week the user will have 50 queries, then 100 on the second week and 150 on the third week.
 
