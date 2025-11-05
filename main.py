@@ -85,6 +85,7 @@ class VTIQuotaLimiter:
 
     def reset_warned(self):
         open(WARNED_USERS, 'w').close()
+        self.warned_users = []
 
 
     @staticmethod
